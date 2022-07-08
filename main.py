@@ -46,7 +46,7 @@ while True:
             print(f"Please select a character)")
             for character in characters:
                 i += 1
-                print(f"- {i}:{character['name']}")
+                print(f"- {i}: {character['name']}")
                 IDs.append(character['id'])
 
             index = int(input(f"Which ID? (1-{len(characters)}) ")) - 1
