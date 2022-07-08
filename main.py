@@ -14,46 +14,74 @@ PRIVATE_API_KEY = getenv("MARVEL_PRIVATE_API_KEY")
 SEARCH_URL = "https://gateway.marvel.com:443/v1/public/characters"
 DETAILS_URL = "https://gateway.marvel.com:443/v1/public/characters/{id}"
 
+PAGE_SIZE = 20
+
 while True:
     timestamp = str(time_ns())
     key_hash = md5(f"{timestamp}{PRIVATE_API_KEY}{PUBLIC_API_KEY}".encode("utf-8")).hexdigest()
     default_params = {
         'apikey': PUBLIC_API_KEY,
         'ts': timestamp,
-        'hash': key_hash
+        'hash': key_hash,
     }
 
     name = input("What Marvel character? ")
 
-    print("Trying to find that character . . .")
+    keep_searching = True
+    ID = None
+    offset = 0
 
-    search_params = {
-        **default_params,
-        'nameStartsWith': name
-    }
+    while keep_searching:
 
-    res = get(SEARCH_URL, search_params).json()
+        print("Trying to find that character . . .")
 
-    # refer to https://developer.marvel.com/docs#!/public/getCreatorCollection_get_0 for data shape
-    characters = res['data']['results']
+        search_params = {
+            **default_params,
+            'nameStartsWith': name,
+            'limit': PAGE_SIZE,
+            'offset': offset
+        }
 
-    if len(characters) == 0:
-        print("Couldn't find any characters by this name...")
-    else:
-        i = 0
-        if len(characters) > 1:
+        res = get(SEARCH_URL, search_params).json()
+
+        # refer to https://developer.marvel.com/docs#!/public/getCreatorCollection_get_0 for data shape
+
+        data = res['data']
+        total = data['total']
+        offset = data['offset']
+
+        characters = data['results']
+
+        if total == 0:
+            print("Couldn't find any characters by this name...")
+            keep_searching = False
+        elif total == 1:
+            ID = characters[0]['id']
+            keep_searching = False
+        else:
             IDs = []
+            i = 0
             print(f"Please select a character)")
             for character in characters:
                 i += 1
                 print(f"- {i}: {character['name']}")
                 IDs.append(character['id'])
 
-            index = int(input(f"Which ID? (1-{len(characters)}) ")) - 1
-            ID = IDs[index]
-        else:
-            ID = characters[0]['id']
+            choice = input(f"Which ID? (1-{len(characters)}), or 'n' for next page ")
 
+            if choice == "n":
+                if offset + PAGE_SIZE >= total:
+                    print("There are no more pages...")
+                    keep_searching = False
+                else:
+                    offset += PAGE_SIZE
+            else:
+                index = int(choice) - 1
+                ID = IDs[index]
+                keep_searching = False
+                found_a_character = True
+
+    if ID:  # if any previous branch resulted in a result
         print("Retrieving details . . .")
 
         res = get(DETAILS_URL.format(id=ID), params=default_params).json()
