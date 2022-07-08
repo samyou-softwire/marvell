@@ -41,19 +41,22 @@ while True:
         print("Couldn't find any characters by this name...")
     else:
         i = 0
-        IDs = []
-        print(f"Please select a character)")
-        for character in characters:
-            i += 1
-            print(f"- {i}:{character['name']}")
-            IDs.append(character['id'])
+        if len(characters) > 1:
+            IDs = []
+            print(f"Please select a character)")
+            for character in characters:
+                i += 1
+                print(f"- {i}:{character['name']}")
+                IDs.append(character['id'])
 
-        index = int(input(f"Which ID? (1-{len(characters)}) ")) - 1
-        id = IDs[index]
+            index = int(input(f"Which ID? (1-{len(characters)}) ")) - 1
+            ID = IDs[index]
+        else:
+            ID = characters[0]['id']
 
         print("Retrieving details . . .")
 
-        res = get(DETAILS_URL.format(id=id), params=default_params).json()
+        res = get(DETAILS_URL.format(id=ID), params=default_params).json()
 
         character = res['data']['results'][0]  # should only be one returned
 
