@@ -16,11 +16,11 @@ URL = "https://gateway.marvel.com:443/v1/public/characters/1"
 # name = input("What Marvel character? ")
 
 timestamp = str(time_ns())
-hash = md5(f"{timestamp}{private_api_key}{public_api_key}".encode("utf-8")).hexdigest()
+key_hash = md5(f"{timestamp}{private_api_key}{public_api_key}".encode("utf-8")).hexdigest()
 params = {
     'apikey': public_api_key,
     'ts': timestamp,
-    'hash': hash
+    'hash': key_hash
 }
 
 res = get(URL, params=params).json()
