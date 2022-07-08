@@ -22,8 +22,7 @@ default_params = {
     'hash': key_hash
 }
 
-# name = input("What Marvel character? ")
-name = "Spider-Man"
+name = input("What Marvel character? ")
 
 print("trying to find that character . . .")
 
@@ -34,4 +33,29 @@ search_params = {
 
 res = get(SEARCH_URL, search_params).json()
 
-print(res['data']['results'][0]['name'])
+# refer to https://developer.marvel.com/docs#!/public/getCreatorCollection_get_0 for data shape
+characters = res['data']['results']
+
+if len(characters) == 0:
+    print("Couldn't find any characters by this name...")
+else:
+    i = 0
+    IDs = []
+    print(f"Please select a character)")
+    for character in characters:
+        i += 1
+        print(f"- {i}:{character['name']}")
+        IDs.append(character['id'])
+
+    index = int(input(f"Which ID? (1-{len(characters)}) "))
+    id = IDs[index]
+
+    print("Retrieving details . . .")
+
+    res = get(DETAILS_URL.format(id=id), params=default_params).json()
+
+    character = res['data']['results'][0]  # should only be one returned
+
+    print(f"Name: {character['name']}")
+    print(f"Bio: {character['description']}")
+
