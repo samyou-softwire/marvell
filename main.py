@@ -25,7 +25,7 @@ while True:
 
     name = input("What Marvel character? ")
 
-    print("trying to find that character . . .")
+    print("Trying to find that character . . .")
 
     search_params = {
         **default_params,
